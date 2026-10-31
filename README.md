@@ -40,7 +40,7 @@ implicitly at login.
 ### GNOME Quick Settings
 
 The installer also copies the **REDMI Headphones Neo Controls** extension for
-GNOME Shell 45–48. In GNOME, enable it in the Extensions app or run
+GNOME Shell 45–50, including 50.5. In GNOME, enable it in the Extensions app or run
 `gnome-extensions enable neo-controls@earbuds.dev`. A logout and login may be
 needed after installation or an update. The companion must be running; open
 its application launcher if Quick Settings reports that the app is unavailable.

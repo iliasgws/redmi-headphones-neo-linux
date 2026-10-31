@@ -11,8 +11,8 @@ const PATH = '/dev/earbuds/NeoControls';
 const IFACE = 'dev.earbuds.NeoControls';
 
 const NeoIndicator = GObject.registerClass(class NeoIndicator extends SystemIndicator {
-    constructor() {
-        super();
+    _init() {
+        super._init();
         this._state = {available: false, connected: false, battery: -1, mode: -1,
             level: -1, adaptive: false, busy: false, error: ''};
         this._indicator = this._addIndicator();
