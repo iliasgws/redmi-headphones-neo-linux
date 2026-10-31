@@ -30,6 +30,12 @@ mkdir -p "$dest/assets" "$HOME/.local/share/applications" "$HOME/.config/autosta
 cp "$src"/*.py "$dest/"
 cp "$src"/assets/*.webp "$dest/assets/"
 cp "$src"/assets/*.svg "$dest/assets/"
+extension_dir="$HOME/.local/share/gnome-shell/extensions/neo-controls@earbuds.dev"
+mkdir -p "$extension_dir"
+cp "$src"/gnome-extension/neo-controls@earbuds.dev/extension.js "$src"/gnome-extension/neo-controls@earbuds.dev/metadata.json "$extension_dir/"
+if [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* ]] && command -v gnome-extensions >/dev/null 2>&1; then
+    gnome-extensions enable neo-controls@earbuds.dev 2>/dev/null || printf '%s\n' 'Enable REDMI Headphones Neo Controls in the GNOME Extensions app after logging in again.'
+fi
 repo_root=$(git -C "$src" rev-parse --show-toplevel 2>/dev/null || :)
 if [ "$repo_root" = "$src" ]; then
     printf '%s\n' "$src" > "$dest/source-path"

@@ -11,6 +11,7 @@ from gi.repository import Gio, GLib, Gtk, Gdk
 from neo_tray import NeoTray
 from neo_settings import NeoSettings
 from neo_image import set_animation_frame
+from neo_gnome import NeoGnomeBridge
 
 BLUEZ = 'org.bluez'
 ROOT = '/'
@@ -43,6 +44,8 @@ class NeoPopup(Gtk.Application):
         self.controls_path = None
         self.controls_snapshot = None
         self.controls_busy = False
+        self.controls_error = None
+        self.gnome_bridge = None
         self.control_generation = 0
         self.worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix='neo-controls')
         self.update_worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix='neo-update')
@@ -72,6 +75,7 @@ class NeoPopup(Gtk.Application):
             return
         self.hold()
         self.build_window()
+        self.gnome_bridge = NeoGnomeBridge(self)
         self.tray = NeoTray(self.open_settings)
         if self.preview:
             self.current = '/preview'
@@ -213,6 +217,7 @@ class NeoPopup(Gtk.Application):
             if object_path in self.objects:
                 for name in interfaces: self.objects[object_path].pop(name, None)
             if ADAPTER in interfaces: self.adapters.discard(object_path)
+            self.update_settings()
 
     def property_signal(self, bus, sender, path, interface, signal, parameters):
         iface, changed, invalidated = parameters.unpack()
@@ -238,6 +243,8 @@ class NeoPopup(Gtk.Application):
                 self.consider(path, discovered=seen or ('Name' in changed and 'RSSI' in props))
         if path == self.current:
             if self.window.get_visible(): self.refresh()
+            self.update_settings()
+        elif self.is_neo(path):
             self.update_settings()
 
     def is_neo(self, path):
@@ -331,11 +338,13 @@ class NeoPopup(Gtk.Application):
             self.load_controls()
 
     def update_settings(self, error=None):
-        if self.settings is None: return
+        self.controls_error = error
         interfaces = self.objects.get(self.current, {}) if self.current else {}
         connected = bool(interfaces.get(DEVICE, {}).get('Connected'))
         battery = interfaces.get(BATTERY, {}).get('Percentage')
-        self.settings.refresh(self.controls_snapshot, battery, connected, self.controls_busy, error)
+        if self.settings is not None:
+            self.settings.refresh(self.controls_snapshot, battery, connected, self.controls_busy, error)
+        if self.gnome_bridge: self.gnome_bridge.emit()
 
     def load_controls(self):
         self.run_control('read', None)
@@ -492,6 +501,7 @@ class NeoPopup(Gtk.Application):
     def do_shutdown(self):
         self.stop_animation()
         if self.tray: self.tray.close()
+        if self.gnome_bridge: self.gnome_bridge.close()
         self.worker.shutdown(wait=False, cancel_futures=True)
         self.update_worker.shutdown(wait=False, cancel_futures=True)
         if self.bus:
