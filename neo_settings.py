@@ -163,6 +163,7 @@ class NeoSettings:
             icon=Gtk.Picture(); icon.set_can_shrink(True); icon.set_size_request(30,30)
             icon.set_halign(Gtk.Align.CENTER)
             icon.set_valign(Gtk.Align.CENTER)
+            icon.set_margin_top(8)
             icon.set_content_fit(Gtk.ContentFit.CONTAIN)
             icon.set_paintable(Gdk.Texture.new_for_pixbuf(GdkPixbuf.Pixbuf.new_from_file(str(ASSETS / f'mode-{icon_name}-normal.svg'))))
             content.append(icon)
