@@ -94,7 +94,7 @@ class NeoSettings:
         self.syncing = False
         self.mode = None
         self.adaptive = False
-        self.window = Gtk.ApplicationWindow(application=app, title='REDMI Headphones Neo')
+        self.window = Gtk.ApplicationWindow(application=app, title='Neo Headphones Settings')
         self.window.set_default_size(420, 700)
         self.window.set_resizable(False)
         self.window.set_decorated(False)
@@ -102,7 +102,8 @@ class NeoSettings:
         self.window.add_css_class('neo-settings-window')
         css = Gtk.CssProvider()
         css.load_from_data(b'''
-          window.neo-settings-window { background: #f2f2f4; color: #121212; }
+          window.neo-settings-window { background: transparent; color: #121212; }
+          .neo-settings-surface { background: #f2f2f4; border-radius: 20px; }
           .settings-title { color:#111; font-size:25px; font-weight:600; }
           .settings-card { background:white; color:#161616; border-radius:24px; padding:20px; }
           .settings-battery { background:#fafafa; border-radius:30px; padding:10px 22px; color:#333; font-size:18px; }
@@ -121,6 +122,8 @@ class NeoSettings:
         ''')
         Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         scroller = Gtk.ScrolledWindow(); scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scroller.add_css_class('neo-settings-surface')
+        scroller.set_overflow(Gtk.Overflow.HIDDEN)
         self.window.set_child(scroller)
         page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
         page.set_margin_top(22); page.set_margin_bottom(24); page.set_margin_start(20); page.set_margin_end(20)

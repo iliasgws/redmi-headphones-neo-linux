@@ -17,6 +17,17 @@ sending Bluetooth commands. It does not represent the production error flow.
 The app currently does not expose an in-app quit command; closing a window hides
 it while discovery continues. End the process or log out to stop discovery.
 
+The settings surface draws rounded corners itself. Hyprland can also draw its
+own square border; on Hyprland 0.55+ an optional compositor rule removes that
+border and rounds only the settings window:
+
+```lua
+hl.window_rule({ match = { class = "^dev[.]earbuds[.]NeoPopup$", title = "^Neo Headphones Settings$" }, rounding = 20, border_size = 0 })
+```
+
+Place the rule in your Hyprland configuration and reload it. Hyprland rule
+syntax varies by version; consult the documentation for your installed version.
+
 For a local user service started by an operator, use the operator's actual unit
 name with `systemctl --user` / `journalctl --user`; the installer does not
 create a systemd unit. Autostart relies on the desktop session. Avoid copying
