@@ -157,6 +157,7 @@ class NeoPopup(Gtk.Application):
         self.status.add_css_class('neo-status')
         self.status.set_wrap(True)
         self.status.set_justify(Gtk.Justification.CENTER)
+        self.status.set_margin_top(16)
         self.status.set_margin_bottom(20)
         outer.append(self.status)
         self.button = Gtk.Button(label='Connect')
