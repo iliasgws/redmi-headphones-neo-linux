@@ -21,7 +21,7 @@ be slower than a phone and depends on the headset advertising nearby.
 
 ## Install
 
-Clone this private repository, enter it, and run:
+Clone the repository, enter it, and run:
 
 ```sh
 git clone https://github.com/iliasgws/redmi-headphones-neo-linux.git
@@ -33,8 +33,7 @@ The last command uses `sudo` to install dependencies on Fedora or
 Arch/Omarchy, then installs the app for your user. If dependencies are already
 installed, use `./install.sh` without the flag. Open **REDMI Headphones Neo**
 from the application menu, or log out and back in to start discovery
-implicitly at login. The repository is private, so `git clone` requires access
-to it and working GitHub authentication.
+implicitly at login.
 
 ### Manual dependencies
 

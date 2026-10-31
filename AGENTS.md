@@ -35,7 +35,7 @@ discovery, and tray icon share one long-running user-session process.
 - Avoid printing device addresses, serial numbers, raw packet captures, tokens,
   or personal user paths in committed files and logs.
 - Xiaomi artwork has no redistribution permission established; see ASSETS.md.
-  Do not publish or relicense it on the assumption that it is open source.
+  Do not relicense it on the assumption that it is open source.
 - Keep the real connection-failure handling separate from the demo unless
   explicitly asked to integrate it.
 
