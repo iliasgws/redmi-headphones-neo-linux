@@ -103,6 +103,7 @@ class NeoPopup(Gtk.Application):
             .neo-title { color: #101010; font-size: 20px; font-weight: 600; }
             .neo-close { min-width: 30px; min-height: 30px; padding: 0; border-radius: 99px; background: #f1f1f1; color: #8b8b8b; box-shadow: none; border: none; font-size: 22px; }
             .neo-status { color: #242424; font-size: 14px; }
+            .neo-animation-fade { background: transparent; box-shadow: inset 0 0 30px 16px #fff; }
             .neo-button { min-height: 52px; border-radius: 16px; border: none; box-shadow: none; background: #ededed; color: #2d2d2d; font-size: 18px; }
             .neo-button:hover { background: #e1e1e1; }
             .battery-body { border: 2px solid #292929; border-radius: 4px; padding: 2px; min-width: 22px; min-height: 8px; }
@@ -132,10 +133,18 @@ class NeoPopup(Gtk.Application):
         outer.append(self.subtitle)
         self.picture = Gtk.Picture()
         self.picture.set_size_request(300, 275)
-        self.picture.set_vexpand(True)
         self.picture.set_can_shrink(True)
         self.picture.set_content_fit(Gtk.ContentFit.CONTAIN)
-        outer.append(self.picture)
+        animation = Gtk.Overlay()
+        animation.set_vexpand(True)
+        animation.set_child(self.picture)
+        self.animation_fade = Gtk.Box()
+        self.animation_fade.add_css_class('neo-animation-fade')
+        self.animation_fade.set_can_target(False)
+        self.animation_fade.set_hexpand(True)
+        self.animation_fade.set_vexpand(True)
+        animation.add_overlay(self.animation_fade)
+        outer.append(animation)
         self.battery_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         self.battery_row.set_halign(Gtk.Align.CENTER)
         self.battery_row.set_valign(Gtk.Align.CENTER)
@@ -430,6 +439,7 @@ class NeoPopup(Gtk.Application):
         if self.animation_key == name: return
         self.stop_animation()
         self.animation_key = name
+        self.animation_fade.set_visible(name == 'find')
         start, count, delay = {'find': (1000, 60, 32), 'connecting': (2000, 150, 32), 'connected': (3000, 150, 30)}[name]
         index = [0]
         def frame():
