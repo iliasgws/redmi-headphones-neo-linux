@@ -127,7 +127,7 @@ class NeoSettings:
         header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         page.append(header)
         back = Gtk.Button(); back.add_css_class('settings-back'); back.set_tooltip_text('Back to popup')
-        back_icon = Gtk.Picture(); back_icon.set_size_request(22,22); back_icon.set_can_shrink(True)
+        back_icon = Gtk.Picture(); back_icon.set_size_request(16,16); back_icon.set_can_shrink(True)
         back_icon.set_halign(Gtk.Align.CENTER); back_icon.set_valign(Gtk.Align.CENTER)
         back_icon.set_content_fit(Gtk.ContentFit.CONTAIN)
         back_icon.set_paintable(Gdk.Texture.new_for_pixbuf(GdkPixbuf.Pixbuf.new_from_file_at_scale(str(ASSETS / 'back.svg'), 128, 128, True)))
