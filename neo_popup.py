@@ -2,6 +2,8 @@
 """Local BlueZ discovery popup for the REDMI Headphones Neo."""
 import sys
 import time
+import math
+import cairo
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -103,7 +105,6 @@ class NeoPopup(Gtk.Application):
             .neo-title { color: #101010; font-size: 20px; font-weight: 600; }
             .neo-close { min-width: 30px; min-height: 30px; padding: 0; border-radius: 99px; background: #f1f1f1; color: #8b8b8b; box-shadow: none; border: none; font-size: 22px; }
             .neo-status { color: #242424; font-size: 14px; }
-            .neo-animation-fade { background: transparent; box-shadow: inset 0 0 30px 16px #fff; }
             .neo-button { min-height: 52px; border-radius: 16px; border: none; box-shadow: none; background: #ededed; color: #2d2d2d; font-size: 18px; }
             .neo-button:hover { background: #e1e1e1; }
             .battery-body { border: 2px solid #292929; border-radius: 4px; padding: 2px; min-width: 22px; min-height: 8px; }
@@ -138,13 +139,17 @@ class NeoPopup(Gtk.Application):
         animation = Gtk.Overlay()
         animation.set_vexpand(True)
         animation.set_child(self.picture)
-        self.animation_fade = Gtk.Box()
-        self.animation_fade.add_css_class('neo-animation-fade')
+        self.animation_fade = Gtk.DrawingArea()
+        self.animation_fade.set_draw_func(self.draw_animation_fade)
         self.animation_fade.set_can_target(False)
         self.animation_fade.set_hexpand(True)
         self.animation_fade.set_vexpand(True)
         animation.add_overlay(self.animation_fade)
-        outer.append(animation)
+        image_frame = Gtk.AspectFrame.new(0.5, 0.5, 550 / 580, False)
+        image_frame.set_hexpand(True)
+        image_frame.set_vexpand(True)
+        image_frame.set_child(animation)
+        outer.append(image_frame)
         self.battery_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         self.battery_row.set_halign(Gtk.Align.CENTER)
         self.battery_row.set_valign(Gtk.Align.CENTER)
@@ -175,6 +180,32 @@ class NeoPopup(Gtk.Application):
         self.button.set_margin_start(32); self.button.set_margin_end(32); self.button.set_margin_bottom(30)
         self.button.connect('clicked', self.on_connect)
         outer.append(self.button)
+
+    def draw_animation_fade(self, widget, cr, width, height):
+        # Fade the actual 550:580 image on all four sides and hide the square
+        # corners against the popup's white background.
+        radius = min(28.0, width / 4, height / 4)
+        fade = min(38.0, width / 4, height / 4)
+        cr.set_antialias(cairo.ANTIALIAS_BEST)
+        cr.rectangle(0, 0, width, height)
+        cr.new_sub_path()
+        cr.arc(width-radius, radius, radius, -math.pi/2, 0)
+        cr.arc(width-radius, height-radius, radius, 0, math.pi/2)
+        cr.arc(radius, height-radius, radius, math.pi/2, math.pi)
+        cr.arc(radius, radius, radius, math.pi, 3*math.pi/2)
+        cr.close_path()
+        cr.set_fill_rule(cairo.FILL_RULE_EVEN_ODD)
+        cr.set_source_rgb(1, 1, 1)
+        cr.fill()
+        for x0,y0,x1,y1 in ((0,0,fade,0), (width,0,width-fade,0),
+                             (0,0,0,fade), (0,height,0,height-fade)):
+            gradient = cairo.LinearGradient(x0,y0,x1,y1)
+            gradient.add_color_stop_rgba(0,1,1,1,1)
+            gradient.add_color_stop_rgba(1,1,1,1,0)
+            cr.set_source(gradient)
+            if x0 != x1: cr.rectangle(min(x0,x1),0,fade,height)
+            else: cr.rectangle(0,min(y0,y1),width,fade)
+            cr.fill()
 
     def dismiss(self, *_):
         if self.current: self.closed_at[self.current] = time.monotonic()
