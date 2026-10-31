@@ -1,6 +1,7 @@
 """Neo settings window for the Linux companion."""
 from pathlib import Path
 import gi
+import cairo
 gi.require_foreign('cairo')
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib
 
@@ -70,6 +71,7 @@ class NeoLevelSlider(Gtk.DrawingArea):
         return True
 
     def draw_slider(self, widget, cr, width, height):
+        cr.set_antialias(cairo.ANTIALIAS_BEST)
         start, end, y = 14, max(15, width - 14), height / 2
         active = self.is_sensitive()
         cr.set_line_cap(1)
@@ -128,7 +130,7 @@ class NeoSettings:
         back_icon = Gtk.Picture(); back_icon.set_size_request(22,22); back_icon.set_can_shrink(True)
         back_icon.set_halign(Gtk.Align.CENTER); back_icon.set_valign(Gtk.Align.CENTER)
         back_icon.set_content_fit(Gtk.ContentFit.CONTAIN)
-        back_icon.set_paintable(Gdk.Texture.new_for_pixbuf(GdkPixbuf.Pixbuf.new_from_file(str(ASSETS / 'back.svg'))))
+        back_icon.set_paintable(Gdk.Texture.new_for_pixbuf(GdkPixbuf.Pixbuf.new_from_file_at_scale(str(ASSETS / 'back.svg'), 128, 128, True)))
         back.set_child(back_icon)
         back.connect('clicked', lambda *_: self.action('back', None))
         header.append(back)
@@ -165,7 +167,7 @@ class NeoSettings:
             icon.set_valign(Gtk.Align.CENTER)
             icon.set_margin_top(8)
             icon.set_content_fit(Gtk.ContentFit.CONTAIN)
-            icon.set_paintable(Gdk.Texture.new_for_pixbuf(GdkPixbuf.Pixbuf.new_from_file(str(ASSETS / f'mode-{icon_name}-normal.svg'))))
+            icon.set_paintable(Gdk.Texture.new_for_pixbuf(GdkPixbuf.Pixbuf.new_from_file_at_scale(str(ASSETS / f'mode-{icon_name}-normal.svg'), 128, 128, True)))
             content.append(icon)
             button.set_child(content)
             button.set_tooltip_text(label.replace('\n',' '))
@@ -237,7 +239,7 @@ class NeoSettings:
                 else: button.remove_css_class('active')
                 icon,icon_name=self.mode_icons[code]
                 variant='selected' if code==self.mode else 'normal'
-                icon.set_paintable(Gdk.Texture.new_for_pixbuf(GdkPixbuf.Pixbuf.new_from_file(str(ASSETS / f'mode-{icon_name}-{variant}.svg'))))
+                icon.set_paintable(Gdk.Texture.new_for_pixbuf(GdkPixbuf.Pixbuf.new_from_file_at_scale(str(ASSETS / f'mode-{icon_name}-{variant}.svg'), 128, 128, True)))
             self.adaptive_switch.set_active(self.adaptive)
             self.scale.set_value(snapshot['level'])
         for button in self.buttons.values(): button.set_sensitive(enabled)
