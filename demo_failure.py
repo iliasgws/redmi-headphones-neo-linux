@@ -4,6 +4,7 @@ from pathlib import Path
 import gi
 gi.require_version('Gtk','4.0')
 from gi.repository import Gtk, Gdk, GLib
+from neo_image import set_animation_frame
 
 class Demo(Gtk.Application):
     def __init__(self):
@@ -44,7 +45,7 @@ class Demo(Gtk.Application):
         def advance():
             if not window.get_visible(): return GLib.SOURCE_REMOVE
             frame=Path(__file__).resolve().parent/'assets'/f'fc_01013D05_{4000+index[0]}.webp'
-            picture.set_paintable(Gdk.Texture.new_from_filename(str(frame)))
+            set_animation_frame(picture, frame)
             index[0]+=1
             return GLib.SOURCE_REMOVE if index[0]>=75 else GLib.SOURCE_CONTINUE
         advance()

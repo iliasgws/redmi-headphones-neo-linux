@@ -4,6 +4,7 @@ import gi
 import cairo
 gi.require_foreign('cairo')
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib
+from neo_image import set_animation_frame
 
 ASSETS = Path(__file__).resolve().parent / 'assets'
 
@@ -136,7 +137,7 @@ class NeoSettings:
         title = Gtk.Label(label='REDMI Headphones Neo'); title.add_css_class('settings-title'); title.set_wrap(True); title.set_xalign(0)
         header.append(title)
         self.picture = Gtk.Picture()
-        self.picture.set_paintable(Gdk.Texture.new_from_filename(str(ASSETS / 'fc_01013D05_3149.webp')))
+        set_animation_frame(self.picture, ASSETS / 'fc_01013D05_3149.webp')
         self.picture.set_can_shrink(True)
         self.picture.set_content_fit(Gtk.ContentFit.CONTAIN); self.picture.set_size_request(280, 220); page.append(self.picture)
         self.animation_timer = 0
@@ -209,7 +210,7 @@ class NeoSettings:
         index = [0]
         def frame():
             try:
-                self.picture.set_paintable(Gdk.Texture.new_from_filename(str(ASSETS / f'fc_01013D05_{3000 + index[0]}.webp')))
+                set_animation_frame(self.picture, ASSETS / f'fc_01013D05_{3000 + index[0]}.webp')
             except GLib.Error:
                 self.animation_timer = 0
                 return GLib.SOURCE_REMOVE

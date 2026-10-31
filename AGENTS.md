@@ -15,6 +15,7 @@ discovery, and tray icon share one long-running user-session process.
 - `neo_protocol.py`: serialized RFCOMM framing, authentication, SDP, and Neo
   control commands. Device identities are checked before settings commands.
 - `neo_tray.py`: StatusNotifierItem registration and activation.
+- `neo_image.py`: physical-resolution frame scaling and bounded image cache.
 - `demo_failure.py`: standalone mock; never sends Bluetooth commands.
 - `assets/`: Xiaomi-derived frame sequences and separately authored UI icons.
 - `install.sh` and `uninstall.sh`: per-user installation and removal.

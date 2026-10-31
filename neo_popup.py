@@ -10,6 +10,7 @@ gi.require_version('Gtk', '4.0')
 from gi.repository import Gio, GLib, Gtk, Gdk
 from neo_tray import NeoTray
 from neo_settings import NeoSettings
+from neo_image import set_animation_frame
 
 BLUEZ = 'org.bluez'
 ROOT = '/'
@@ -447,7 +448,7 @@ class NeoPopup(Gtk.Application):
                 self.animation_id = 0
                 return GLib.SOURCE_REMOVE
             try:
-                self.picture.set_paintable(Gdk.Texture.new_from_filename(str(ASSETS / f'fc_01013D05_{start + index[0]}.webp')))
+                set_animation_frame(self.picture, ASSETS / f'fc_01013D05_{start + index[0]}.webp')
             except GLib.Error:
                 self.animation_id = 0
                 return GLib.SOURCE_REMOVE
