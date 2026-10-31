@@ -102,8 +102,8 @@ class NeoSettings:
         self.window.add_css_class('neo-settings-window')
         css = Gtk.CssProvider()
         css.load_from_data(b'''
-          window.neo-settings-window { background: transparent; color: #121212; }
-          .neo-settings-surface { background: #f2f2f4; border-radius: 20px; }
+          window.neo-settings-window { background: #f2f2f4; color: #121212; border-radius: 20px; }
+          .neo-settings-surface { background: transparent; border-radius: 20px; }
           .settings-title { color:#111; font-size:25px; font-weight:600; }
           .settings-card { background:white; color:#161616; border-radius:24px; padding:20px; }
           .settings-battery { background:#fafafa; border-radius:30px; padding:10px 22px; color:#333; font-size:18px; }
