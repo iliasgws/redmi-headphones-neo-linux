@@ -45,7 +45,13 @@ The installer checks GTK, Python GI, Cairo, and the WebP/SVG image loaders.
 
 ## Update and remove
 
-To update, pull the repository and rerun the installer:
+Open the Neo settings window and click **Update app**. The app checks its
+installed Git checkout, downloads a fast-forward update, installs it, and
+restarts. This needs Git and network access. It stops if the checkout has
+local or untracked changes; commit or remove those changes first. If the
+checkout was moved, reinstall from its new location to reconnect the button.
+
+To update manually instead:
 
 ```sh
 git pull

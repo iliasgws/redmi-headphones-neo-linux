@@ -19,6 +19,12 @@ frame. The settings screen has its own once-only 3000–3149 animation.
 running tray watcher; stock GNOME may require an extension. Activation opens
 settings. The app-menu launcher is independent of tray support.
 
+The settings update button uses a separate worker and `neo_updater.py` to
+check the checkout recorded by the installer. It validates the origin, refuses
+local changes, pulls fast-forward only, and reinstalls if the installed revision
+differs. A helper restarts the installed app after the old process exits. Update
+status is returned to the GTK thread; Bluetooth controls have their own worker.
+
 ## Controls
 
 `neo_settings.py` uses GTK 4 and a Cairo slider. Pointer/touch dragging changes

@@ -16,6 +16,7 @@ discovery, and tray icon share one long-running user-session process.
   control commands. Device identities are checked before settings commands.
 - `neo_tray.py`: StatusNotifierItem registration and activation.
 - `neo_image.py`: physical-resolution frame scaling and bounded image cache.
+- `neo_updater.py`: bounded Git update, installation, and restart scheduling.
 - `demo_failure.py`: standalone mock; never sends Bluetooth commands.
 - `assets/`: Xiaomi-derived frame sequences and separately authored UI icons.
 - `install.sh` and `uninstall.sh`: per-user installation and removal.
@@ -39,6 +40,8 @@ discovery, and tray icon share one long-running user-session process.
   Do not relicense it on the assumption that it is open source.
 - Keep the real connection-failure handling separate from the demo unless
   explicitly asked to integrate it.
+- Keep updates fast-forward only and refuse dirty checkouts; the installer
+  records the checkout path and installed revision in the user's app directory.
 
 ## Working conventions
 

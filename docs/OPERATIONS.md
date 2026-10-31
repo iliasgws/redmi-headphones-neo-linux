@@ -23,6 +23,7 @@ border and rounds only the settings window:
 
 ```lua
 hl.window_rule({ match = { class = "^dev[.]earbuds[.]NeoPopup$", title = "^Neo Headphones Settings$" }, rounding = 20, border_size = 0 })
+hl.window_rule({ match = { class = "^dev[.]earbuds[.]NeoPopup$", title = "^Neo Headphones Connection$" }, rounding = 20, border_size = 0 })
 ```
 
 Place the rule in your Hyprland configuration and reload it. Hyprland rule

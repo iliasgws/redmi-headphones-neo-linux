@@ -30,6 +30,10 @@ mkdir -p "$dest/assets" "$HOME/.local/share/applications" "$HOME/.config/autosta
 cp "$src"/*.py "$dest/"
 cp "$src"/assets/*.webp "$dest/assets/"
 cp "$src"/assets/*.svg "$dest/assets/"
+repo_root=$(git -C "$src" rev-parse --show-toplevel 2>/dev/null || :)
+if [ "$repo_root" = "$src" ]; then
+    printf '%s\n' "$src" > "$dest/source-path"
+fi
 cat > "$HOME/.config/autostart/neo-popup.desktop" <<EOF
 [Desktop Entry]
 Type=Application
@@ -49,7 +53,10 @@ Terminal=false
 Categories=AudioVideo;Audio;
 EOF
 printf 'Installed to %s and enabled desktop autostart.\n' "$dest"
-if [ -n "${WAYLAND_DISPLAY:-}${DISPLAY:-}" ]; then
+if [ "$repo_root" = "$src" ]; then
+    git -C "$src" rev-parse HEAD > "$dest/installed-revision"
+fi
+if [ "${NEO_NO_START:-0}" != 1 ] && [ -n "${WAYLAND_DISPLAY:-}${DISPLAY:-}" ]; then
     nohup python3 "$dest/neo_popup.py" >/dev/null 2>&1 </dev/null &
     printf '%s\n' 'Starting the companion in this desktop session.'
 fi

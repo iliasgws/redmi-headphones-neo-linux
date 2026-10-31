@@ -45,6 +45,8 @@ class NeoPopup(Gtk.Application):
         self.controls_busy = False
         self.control_generation = 0
         self.worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix='neo-controls')
+        self.update_worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix='neo-update')
+        self.update_busy = False
 
     def do_command_line(self, command_line):
         self.activate()
@@ -91,7 +93,7 @@ class NeoPopup(Gtk.Application):
             print('Neo popup: Bluetooth service unavailable:', exc.message, file=sys.stderr)
 
     def build_window(self):
-        self.window = Gtk.ApplicationWindow(application=self, title='REDMI Headphones Neo')
+        self.window = Gtk.ApplicationWindow(application=self, title='Neo Headphones Connection')
         self.window.set_default_size(400, 480)
         self.window.set_resizable(False)
         self.window.set_decorated(False)
@@ -348,6 +350,8 @@ class NeoPopup(Gtk.Application):
     def control_action(self, action, value):
         if action in ('mode', 'level', 'adaptive'):
             self.run_control(action, value)
+        elif action == 'update':
+            self.start_update()
         elif action == 'back':
             if self.settings: self.settings.hide()
             if self.current:
@@ -362,6 +366,36 @@ class NeoPopup(Gtk.Application):
         try: bus.call_finish(result)
         except GLib.Error:
             if path == self.current: self.update_settings('Could not disconnect. Try Bluetooth settings.')
+
+    def start_update(self):
+        if self.update_busy: return
+        self.update_busy = True
+        self.settings.set_update_status('Checking for updates…', busy=True)
+        def work():
+            import neo_updater
+            result = neo_updater.update()
+            restart = neo_updater.restart_after_update() if result.restart_required else False
+            return result, restart
+        def completed(done):
+            try: result, restart = done.result()
+            except Exception:
+                GLib.idle_add(self.update_finished, None, False)
+                return
+            GLib.idle_add(self.update_finished, result, restart)
+        self.update_worker.submit(work).add_done_callback(completed)
+
+    def update_finished(self, result, restart):
+        self.update_busy = False
+        if result is None:
+            self.settings.set_update_status('Update failed. Please try again.')
+        elif result.restart_required and restart:
+            self.settings.set_update_status('Updated. Restarting…', busy=True)
+            GLib.timeout_add(500, lambda: (self.quit(), GLib.SOURCE_REMOVE)[1])
+        elif result.restart_required:
+            self.settings.set_update_status('Updated. Close and reopen the app to finish.')
+        else:
+            self.settings.set_update_status(result.message)
+        return GLib.SOURCE_REMOVE
 
     def run_control(self, action, value):
         if self.controls_busy or not self.current: return
@@ -467,6 +501,7 @@ class NeoPopup(Gtk.Application):
         self.stop_animation()
         if self.tray: self.tray.close()
         self.worker.shutdown(wait=False, cancel_futures=True)
+        self.update_worker.shutdown(wait=False, cancel_futures=True)
         if self.bus:
             for path in list(self.adapters):
                 self.bus.call(BLUEZ, path, ADAPTER, 'StopDiscovery', None, None, Gio.DBusCallFlags.NONE, 5000, None, None, None)

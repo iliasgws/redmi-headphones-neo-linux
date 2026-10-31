@@ -119,6 +119,8 @@ class NeoSettings:
           .settings-disconnect { min-height:48px; border-radius:18px; background:#fff; color:#e04848; border:none; box-shadow:none; font-size:15px; font-weight:500; }
           .settings-disconnect:hover { background:#fbeeee; }
           .settings-disconnect:disabled { color:#b0a0a0; }
+          .settings-update { min-height:48px; border-radius:18px; background:#fff; color:#2374da; border:none; box-shadow:none; font-size:15px; font-weight:500; }
+          .settings-update:hover { background:#edf4ff; }
         ''')
         Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         scroller = Gtk.ScrolledWindow(); scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
@@ -197,7 +199,20 @@ class NeoSettings:
         self.disconnect.add_css_class('settings-disconnect')
         self.disconnect.connect('clicked', lambda *_: self.action('disconnect', None))
         page.append(self.disconnect)
+        self.update_button=Gtk.Button(label='Update app')
+        self.update_button.add_css_class('settings-update')
+        self.update_button.connect('clicked', lambda *_: self.action('update', None))
+        page.append(self.update_button)
+        self.update_status=Gtk.Label(label=''); self.update_status.set_wrap(True)
+        self.update_status.add_css_class('settings-status'); self.update_status.set_visible(False)
+        page.append(self.update_status)
         self.refresh(None,None,False,False)
+
+    def set_update_status(self, message='', busy=False):
+        self.update_button.set_sensitive(not busy)
+        self.update_button.set_label('Updating…' if busy else 'Update app')
+        self.update_status.set_text(message)
+        self.update_status.set_visible(bool(message))
 
     def hide(self, *_):
         if self.animation_timer:
