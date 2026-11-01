@@ -9,6 +9,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>REDMI-Neo</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\neo.ico</ApplicationIcon>
   </PropertyGroup>
-  <ItemGroup><Content Include="Frames\*.png" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup><Resource Include="Assets\neo.ico" /><Content Include="Assets\neo.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /><Content Include="Frames\*.png" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
 </Project>

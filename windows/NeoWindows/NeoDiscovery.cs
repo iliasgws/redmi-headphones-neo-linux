@@ -57,7 +57,7 @@ public static class NeoDiscovery
         return new List<NeoDevice>(found.Values);
     }
 
-    private static bool IsNeoName(string name)
+    internal static bool IsNeoName(string? name)
     {
         foreach (var candidate in Names)
             if (string.Equals(name?.Trim(), candidate, StringComparison.OrdinalIgnoreCase))

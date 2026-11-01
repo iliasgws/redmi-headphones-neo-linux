@@ -1,17 +1,28 @@
 # Windows 11 preview
 
-Pair and connect the REDMI Headphones Neo in Windows Bluetooth settings, then
-run REDMI-Neo.exe. Choose **Connect controls** to authenticate to the Neo's
-separate control channel. ANC, transparency, Adaptive ANC and strength use the
-same Neo commands as the Linux app. The battery appears only if the headset
-returns a usable value. The Windows build is experimental and has not yet been
-verified against a real device. Windows manages audio pairing and connection.
+Run the installer and follow the prompts. The optional startup entry keeps the
+headphones icon in the notification area and listens for Neo advertisements.
+Click the icon to open the popup. Pair the headphones once in Windows Bluetooth
+settings. A fresh, named Neo advertisement can show the popup automatically;
+Bluetooth discovery depends on the headphone's advertisements and Windows
+adapter, and may not work with hidden or changing Bluetooth addresses.
 
-Build on Windows with .NET 8 SDK:
+**Connect** opens the Neo's authenticated control channel. If Windows did not
+already report the device as connected, the app opens Bluetooth settings so you
+can connect its audio there. Windows' Bluetooth connection status does not prove
+that the audio profile is connected. The app displays battery only if the Neo
+returns a valid value. Controls and battery reporting require verification on a
+real Windows PC with the Neo.
+
+The top-right close button hides the app; use **Exit** in its tray icon menu to
+stop background discovery. To uninstall, use Windows Installed apps.
+
+Build on Windows with the .NET 8 SDK:
 
 ```powershell
 dotnet publish windows/NeoWindows/NeoWindows.csproj -c Release -r win-x64 --self-contained true
 ```
 
-The PNG animation frames are derived from the Xiaomi WebP assets; see the root
-ASSETS.md for provenance and rights.
+The included animation shows the black Neo and derives from the Xiaomi WebP
+assets; see the root ASSETS.md for provenance and rights. A white Neo animation
+has not been found in the extracted resources.

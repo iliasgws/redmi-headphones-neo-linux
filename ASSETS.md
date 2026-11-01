@@ -10,3 +10,7 @@ The `mode-*.svg` and `back.svg` UI icons were authored for this project; the
 mode icons are visually inspired by the user-provided reference. No separate
 license grant is specified for the project code or those icons. Xiaomi and
 REDMI are trademarks of their respective owner. This project is unofficial.
+
+The Windows PNG frames in `windows/NeoWindows/Frames` are conversions of those
+same Xiaomi WebP frames. `windows/NeoWindows/Assets/neo-icon.svg` and its ICO
+conversion were drawn for this project.

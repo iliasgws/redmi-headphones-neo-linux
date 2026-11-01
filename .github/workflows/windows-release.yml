@@ -21,9 +21,23 @@ jobs:
           Copy-Item windows/README.md windows-build/README.md
           Copy-Item ASSETS.md windows-build/ASSETS.md
           Compress-Archive -Path windows-build/* -DestinationPath REDMI-Neo-Windows11-x64.zip
+      - name: Build Windows installer
+        shell: pwsh
+        run: |
+          $compiler = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6/ISCC.exe'
+          if (!(Test-Path $compiler)) {
+            choco install innosetup --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw 'Inno Setup installation failed' }
+          }
+          if (!(Test-Path $compiler)) { throw 'Inno Setup compiler not found' }
+          $tag = '${{ github.ref_name }}'
+          if ($tag -notmatch '^windows-v(\d+\.\d+\.\d+)') { throw 'Tag must contain a semantic version' }
+          $version = $Matches[1]
+          & $compiler "/DAppVersion=$version" windows/installer/neo.iss
+          if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed' }
       - name: Create preview release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${{ github.ref_name }}" REDMI-Neo-Windows11-x64.zip --prerelease --title "Windows 11 preview ${{ github.ref_name }}" --notes "Experimental Windows 11 build. Pair and connect the Neo in Windows Bluetooth settings, then open the app and select Connect controls. ANC and device behavior require verification on Windows with the Neo. Extract the complete ZIP before running REDMI-Neo.exe. See ASSETS.md for animation provenance."
+          gh release create "${{ github.ref_name }}" REDMI-Neo-Setup-x64.exe REDMI-Neo-Windows11-x64.zip --prerelease --title "Windows 11 preview ${{ github.ref_name }}" --notes "Experimental Windows 11 build. Download REDMI-Neo-Setup-x64.exe for the per-user installer, or the ZIP for a portable copy. Bluetooth and device behavior require verification on Windows with the Neo. See ASSETS.md for animation provenance."
