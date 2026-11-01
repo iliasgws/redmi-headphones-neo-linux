@@ -1,0 +1,19 @@
+<Window x:Class="NeoWindows.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="REDMI Headphones Neo" Width="430" Height="710" MinWidth="390" MinHeight="600" WindowStartupLocation="CenterScreen" Background="#F4F4F6">
+ <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="24">
+  <TextBlock Text="REDMI Headphones Neo" FontSize="23" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,4,0,10"/>
+  <Image x:Name="Animation" Height="220" Stretch="Uniform"/>
+  <TextBlock x:Name="Status" Text="Looking for paired headphones…" TextAlignment="Center" TextWrapping="Wrap" Margin="0,8,0,8"/>
+  <TextBlock x:Name="Battery" Visibility="Collapsed" TextAlignment="Center" FontSize="16" Margin="0,0,0,8"/>
+  <Button x:Name="ConnectButton" Content="Connect controls" Click="Connect_Click" Padding="12" Margin="0,4"/>
+  <Button Content="Pair in Windows Bluetooth settings" Click="BluetoothSettings_Click" Padding="10" Margin="0,4"/>
+  <Border x:Name="Controls" Background="White" CornerRadius="18" Padding="16" Margin="0,14,0,0" IsEnabled="False"><StackPanel>
+   <TextBlock Text="Noise control" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
+   <UniformGrid Columns="3"><Button Content="Off" Tag="0" Click="Mode_Click" Padding="6"/><Button Content="ANC" Tag="1" Click="Mode_Click" Padding="6"/><Button Content="Transparency" Tag="2" Click="Mode_Click" Padding="6"/></UniformGrid>
+   <TextBlock x:Name="ModeText" Margin="0,10,0,0" Text="Mode unavailable"/>
+   <StackPanel x:Name="AncOptions" Visibility="Collapsed"><CheckBox x:Name="Adaptive" Content="Adaptive ANC" Click="Adaptive_Click" Margin="0,12"/>
+    <Slider x:Name="Strength" Minimum="0" Maximum="2" TickFrequency="1" IsSnapToTickEnabled="True" IsMoveToPointEnabled="True" PreviewMouseLeftButtonUp="Strength_Released" KeyUp="Strength_KeyUp"/>
+    <Grid Margin="0,3,0,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><TextBlock Text="Light"/><TextBlock Grid.Column="1" Text="Balanced" HorizontalAlignment="Center"/><TextBlock Grid.Column="2" Text="Deep" HorizontalAlignment="Right"/></Grid>
+   </StackPanel>
+  </StackPanel></Border>
+ </StackPanel></ScrollViewer>
+</Window>
