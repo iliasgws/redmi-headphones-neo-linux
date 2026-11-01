@@ -17,6 +17,8 @@ discovery, and tray icon share one long-running user-session process.
 - `neo_tray.py`: StatusNotifierItem registration and activation.
 - `neo_image.py`: physical-resolution frame scaling and bounded image cache.
 - `neo_updater.py`: bounded Git update, installation, and restart scheduling.
+- `neo_gnome.py` and `gnome-extension/`: session D-Bus bridge and GNOME Shell
+  top-bar UI. Keep device access in the companion's serialized worker.
 - `demo_failure.py`: standalone mock; never sends Bluetooth commands.
 - `assets/`: Xiaomi-derived frame sequences and separately authored UI icons.
 - `install.sh` and `uninstall.sh`: per-user installation and removal.

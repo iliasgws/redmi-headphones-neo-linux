@@ -11,6 +11,7 @@ from gi.repository import Gio, GLib, Gtk, Gdk
 from neo_tray import NeoTray
 from neo_settings import NeoSettings
 from neo_image import set_animation_frame
+from neo_gnome import NeoGnomeBridge
 
 BLUEZ = 'org.bluez'
 ROOT = '/'
@@ -43,6 +44,8 @@ class NeoPopup(Gtk.Application):
         self.controls_path = None
         self.controls_snapshot = None
         self.controls_busy = False
+        self.controls_error = None
+        self.gnome_bridge = None
         self.control_generation = 0
         self.worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix='neo-controls')
         self.update_worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix='neo-update')
@@ -72,6 +75,7 @@ class NeoPopup(Gtk.Application):
             return
         self.hold()
         self.build_window()
+        self.gnome_bridge = NeoGnomeBridge(self)
         self.tray = NeoTray(self.open_settings)
         if self.preview:
             self.current = '/preview'
@@ -206,13 +210,16 @@ class NeoPopup(Gtk.Application):
             object_path, interfaces = args
             self.objects.setdefault(object_path, {}).update(interfaces)
             if ADAPTER in interfaces: self.start_discovery(object_path)
-            if DEVICE in interfaces: self.consider(object_path, discovered=True)
+            if DEVICE in interfaces:
+                self.consider(object_path, discovered=True)
+                if self.is_neo(object_path): self.update_settings()
             if object_path == self.current: self.refresh()
         elif signal == 'InterfacesRemoved':
             object_path, interfaces = args
             if object_path in self.objects:
                 for name in interfaces: self.objects[object_path].pop(name, None)
             if ADAPTER in interfaces: self.adapters.discard(object_path)
+            self.update_settings()
 
     def property_signal(self, bus, sender, path, interface, signal, parameters):
         iface, changed, invalidated = parameters.unpack()
@@ -230,6 +237,7 @@ class NeoPopup(Gtk.Application):
                 self.last_connected[path] = connected
                 if connected and not was and self.is_neo(path): self.show_device(path, 'connected')
                 elif not connected and was and self.current == path:
+                    self.control_generation += 1
                     self.controls_snapshot = None
                     if self.window.get_visible(): self.refresh()
                     self.update_settings()
@@ -238,6 +246,8 @@ class NeoPopup(Gtk.Application):
                 self.consider(path, discovered=seen or ('Name' in changed and 'RSSI' in props))
         if path == self.current:
             if self.window.get_visible(): self.refresh()
+            self.update_settings()
+        elif self.is_neo(path):
             self.update_settings()
 
     def is_neo(self, path):
@@ -255,6 +265,9 @@ class NeoPopup(Gtk.Application):
 
     def show_device(self, path, animation):
         continuing_find = self.current == path and self.animation_key == 'find' and self.animation_id != 0
+        if self.current != path:
+            self.control_generation += 1
+            self.controls_snapshot = None
         self.current = path
         self.last_shown[path] = time.monotonic()
         self.refresh()
@@ -331,11 +344,13 @@ class NeoPopup(Gtk.Application):
             self.load_controls()
 
     def update_settings(self, error=None):
-        if self.settings is None: return
+        self.controls_error = error
         interfaces = self.objects.get(self.current, {}) if self.current else {}
         connected = bool(interfaces.get(DEVICE, {}).get('Connected'))
         battery = interfaces.get(BATTERY, {}).get('Percentage')
-        self.settings.refresh(self.controls_snapshot, battery, connected, self.controls_busy, error)
+        if self.settings is not None:
+            self.settings.refresh(self.controls_snapshot, battery, connected, self.controls_busy, error)
+        if self.gnome_bridge: self.gnome_bridge.emit()
 
     def load_controls(self):
         self.run_control('read', None)
@@ -398,6 +413,7 @@ class NeoPopup(Gtk.Application):
             self.update_settings('Connect the headphones to use these controls.')
             return
         path = self.current
+        generation = self.control_generation
         self.controls_busy = True
         self.update_settings()
         def work():
@@ -414,12 +430,14 @@ class NeoPopup(Gtk.Application):
                 result, error = done.result(), None
             except Exception as exc:
                 result, error = None, type(exc).__name__
-            GLib.idle_add(self.control_finished, path, result, error)
+            GLib.idle_add(self.control_finished, path, generation, result, error)
         future.add_done_callback(completed)
 
-    def control_finished(self, path, result, error):
+    def control_finished(self, path, generation, result, error):
         self.controls_busy = False
-        if path != self.current: return GLib.SOURCE_REMOVE
+        if path != self.current or generation != self.control_generation:
+            self.update_settings()
+            return GLib.SOURCE_REMOVE
         if result is not None: self.controls_snapshot = result
         if error:
             self.controls_snapshot = None
@@ -492,6 +510,7 @@ class NeoPopup(Gtk.Application):
     def do_shutdown(self):
         self.stop_animation()
         if self.tray: self.tray.close()
+        if self.gnome_bridge: self.gnome_bridge.close()
         self.worker.shutdown(wait=False, cancel_futures=True)
         self.update_worker.shutdown(wait=False, cancel_futures=True)
         if self.bus:
