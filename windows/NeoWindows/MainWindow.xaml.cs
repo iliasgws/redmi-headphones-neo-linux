@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Forms = System.Windows.Forms;
@@ -55,7 +56,13 @@ public partial class MainWindow : Window
     }
     private void ShowWindow() { Show(); WindowState = WindowState.Normal; Activate(); }
     private void Close_Click(object sender, RoutedEventArgs e) { lastPopup = DateTimeOffset.UtcNow; Hide(); }
-    private void Settings_Click(object sender, RoutedEventArgs e) { Controls.Visibility = Controls.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible; }
+    private void Settings_Click(object sender, RoutedEventArgs e)
+    {
+        bool expanded = Controls.Visibility != Visibility.Visible;
+        Controls.Visibility = expanded ? Visibility.Visible : Visibility.Collapsed;
+        Animation.Height = expanded ? 155 : 225;
+        ConnectButton.Content = expanded ? "Hide settings" : "Settings";
+    }
     private void PlayAnimation(int start, int end) { animationTimer.Stop(); frame = start; endFrame = end; AdvanceAnimation(); animationTimer.Start(); }
     private void AdvanceAnimation()
     {
@@ -85,7 +92,7 @@ public partial class MainWindow : Window
             bool connected = paired?.Connected == true;
             if (!connected && previousConnected) {
                 session?.Dispose(); session = null; BatteryRow.Visibility = Visibility.Collapsed;
-                SettingsButton.Visibility = Visibility.Collapsed; Controls.Visibility = Visibility.Collapsed;
+                SettingsButton.Visibility = Visibility.Collapsed; Controls.Visibility = Visibility.Collapsed; Animation.Height = 225;
                 ConnectButton.Content = "Connect";
             }
             if (connected && !previousConnected) {
@@ -154,6 +161,11 @@ public partial class MainWindow : Window
     private void ShowSettings(NeoSettings settings)
     {
         loading = true;
+        foreach (var button in new[] { ModeOff, ModeAnc, ModeTransparency }) {
+            bool selected = int.Parse((string)button.Tag) == settings.NoiseMode;
+            button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(selected ? "#1677F2" : "#EFF1F5"));
+            button.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(selected ? "#FFFFFF" : "#252A33"));
+        }
         ModeText.Text = settings.NoiseMode switch { 0 => "Off", 1 => "Noise cancellation", 2 => "Transparency", _ => "Unknown" };
         AncOptions.Visibility = settings.NoiseMode == 1 ? Visibility.Visible : Visibility.Collapsed;
         Adaptive.IsChecked = settings.AdaptiveAnc; Strength.IsEnabled = !settings.AdaptiveAnc; Strength.Value = settings.NoiseLevel;
