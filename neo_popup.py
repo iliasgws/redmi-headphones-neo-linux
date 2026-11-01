@@ -210,7 +210,9 @@ class NeoPopup(Gtk.Application):
             object_path, interfaces = args
             self.objects.setdefault(object_path, {}).update(interfaces)
             if ADAPTER in interfaces: self.start_discovery(object_path)
-            if DEVICE in interfaces: self.consider(object_path, discovered=True)
+            if DEVICE in interfaces:
+                self.consider(object_path, discovered=True)
+                if self.is_neo(object_path): self.update_settings()
             if object_path == self.current: self.refresh()
         elif signal == 'InterfacesRemoved':
             object_path, interfaces = args
@@ -235,6 +237,7 @@ class NeoPopup(Gtk.Application):
                 self.last_connected[path] = connected
                 if connected and not was and self.is_neo(path): self.show_device(path, 'connected')
                 elif not connected and was and self.current == path:
+                    self.control_generation += 1
                     self.controls_snapshot = None
                     if self.window.get_visible(): self.refresh()
                     self.update_settings()
@@ -262,6 +265,9 @@ class NeoPopup(Gtk.Application):
 
     def show_device(self, path, animation):
         continuing_find = self.current == path and self.animation_key == 'find' and self.animation_id != 0
+        if self.current != path:
+            self.control_generation += 1
+            self.controls_snapshot = None
         self.current = path
         self.last_shown[path] = time.monotonic()
         self.refresh()
@@ -407,6 +413,7 @@ class NeoPopup(Gtk.Application):
             self.update_settings('Connect the headphones to use these controls.')
             return
         path = self.current
+        generation = self.control_generation
         self.controls_busy = True
         self.update_settings()
         def work():
@@ -423,12 +430,14 @@ class NeoPopup(Gtk.Application):
                 result, error = done.result(), None
             except Exception as exc:
                 result, error = None, type(exc).__name__
-            GLib.idle_add(self.control_finished, path, result, error)
+            GLib.idle_add(self.control_finished, path, generation, result, error)
         future.add_done_callback(completed)
 
-    def control_finished(self, path, result, error):
+    def control_finished(self, path, generation, result, error):
         self.controls_busy = False
-        if path != self.current: return GLib.SOURCE_REMOVE
+        if path != self.current or generation != self.control_generation:
+            self.update_settings()
+            return GLib.SOURCE_REMOVE
         if result is not None: self.controls_snapshot = result
         if error:
             self.controls_snapshot = None

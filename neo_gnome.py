@@ -63,13 +63,22 @@ class NeoGnomeBridge:
         if connected_path and connected_path != app.current:
             app.current = connected_path
             app.controls_snapshot = None
+        if action in ('mode', 'level', 'adaptive', 'disconnect'):
+            if not connected_path:
+                invocation.return_dbus_error(NAME + '.Disconnected', 'The headphones are disconnected.')
+                return
+            if app.controls_busy:
+                invocation.return_dbus_error(NAME + '.Busy', 'Headphone controls are busy.')
+                return
+            if action != 'disconnect' and not app.controls_snapshot:
+                invocation.return_dbus_error(NAME + '.Unavailable', 'Headphone controls have not been read yet.')
+                return
         if action == 'settings': app.open_settings()
         elif action == 'refresh':
             if connected_path: app.load_controls()
             else: self.emit()
         elif action in ('mode', 'level', 'adaptive'):
-            if connected_path and app.controls_snapshot and not app.controls_busy:
-                app.run_control(action, value)
+            app.run_control(action, value)
         elif action == 'disconnect' and connected_path:
             app.control_action(action, None)
         invocation.return_value(None)

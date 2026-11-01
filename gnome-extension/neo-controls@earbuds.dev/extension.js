@@ -104,8 +104,15 @@ const NeoIndicator = GObject.registerClass(class NeoIndicator extends SystemIndi
                     const response = proxy.call_finish(result);
                     callback?.(response);
                 } catch (e) {
-                    this._state.error = 'Could not contact the Neo app';
-                    this._render();
+                    if (method === 'Action') {
+                        this._refresh(() => {
+                            this._state.error = 'Could not apply the change; try again';
+                            this._render();
+                        });
+                    } else {
+                        this._state.error = 'Could not contact the Neo app';
+                        this._render();
+                    }
                     console.error(`Neo controls: ${e.message}`);
                 }
             });
@@ -115,8 +122,11 @@ const NeoIndicator = GObject.registerClass(class NeoIndicator extends SystemIndi
         this._call('Action', new GLib.Variant('(sv)', [name, value]));
     }
 
-    _refresh() {
-        this._call('GetState', null, response => this._setState(response.deep_unpack()[0]));
+    _refresh(after = null) {
+        this._call('GetState', null, response => {
+            this._setState(response.deep_unpack()[0]);
+            after?.();
+        });
     }
 
     _render() {
