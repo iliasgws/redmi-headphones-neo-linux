@@ -12,7 +12,7 @@ and a compact settings popup. It uses BlueZ and GTK 4 on Omarchy and GNOME.
   strengths and Adaptive ANC. The slider sends a change when released.
 - A battery percentage when BlueZ reports one, plus Disconnect.
 - Per-user installation and automatic start at login.
-- An optional GNOME Quick Settings panel for connection, battery and Neo
+- An optional GNOME top-bar menu for connection, battery and Neo
   noise controls, plus settings and disconnect.
 
 **Device coverage:** a China-firmware Neo was used on Omarchy; the user
@@ -37,14 +37,14 @@ installed, use `./install.sh` without the flag. Open **REDMI Headphones Neo**
 from the application menu, or log out and back in to start discovery
 implicitly at login.
 
-### GNOME Quick Settings
+### GNOME top-bar controls
 
 The installer also copies the **REDMI Headphones Neo Controls** extension for
 GNOME Shell 45–50, including 50.5. In GNOME, enable it in the Extensions app or run
 `gnome-extensions enable neo-controls@earbuds.dev`. A logout and login may be
 needed after installation or an update. The companion must be running; open
-its application launcher if Quick Settings reports that the app is unavailable.
-Open the Neo menu to refresh the controls. Battery is shown only when BlueZ
+its application launcher if the menu reports that the app is unavailable.
+Click the headphones icon in the top bar to open the Neo menu and refresh the controls. Battery is shown only when BlueZ
 reports it. This extension has not yet been verified in a GNOME session.
 
 ### Manual dependencies

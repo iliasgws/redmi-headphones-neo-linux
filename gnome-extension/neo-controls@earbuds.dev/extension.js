@@ -1,66 +1,59 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
+import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
-import {QuickMenuToggle, SystemIndicator} from 'resource:///org/gnome/shell/ui/quickSettings.js';
+import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const BUS = 'dev.earbuds.NeoControls';
 const PATH = '/dev/earbuds/NeoControls';
 const IFACE = 'dev.earbuds.NeoControls';
 
-const NeoIndicator = GObject.registerClass(class NeoIndicator extends SystemIndicator {
+const NeoIndicator = GObject.registerClass(class NeoIndicator extends PanelMenu.Button {
     _init() {
-        super._init();
+        super._init(0.0, 'REDMI Headphones Neo');
         this._state = {available: false, connected: false, battery: -1, mode: -1,
             level: -1, adaptive: false, busy: false, error: ''};
-        this._indicator = this._addIndicator();
-        this._indicator.icon_name = 'audio-headphones-symbolic';
-        this._indicator.visible = false;
-        this._toggle = new QuickMenuToggle({
-            title: 'Headphones Neo',
-            subtitle: 'Unavailable',
-            iconName: 'audio-headphones-symbolic',
-            toggleMode: false,
-        });
-        this._toggle.menu.setHeader('audio-headphones-symbolic', 'Headphones Neo');
+        this._icon = new St.Icon({icon_name: 'audio-headphones-symbolic',
+            style_class: 'system-status-icon'});
+        this.add_child(this._icon);
+        this._title = new PopupMenu.PopupMenuItem('REDMI Headphones Neo', {reactive: false});
+        this.menu.addMenuItem(this._title);
         this._status = new PopupMenu.PopupMenuItem('Unavailable', {reactive: false});
-        this._toggle.menu.addMenuItem(this._status);
+        this.menu.addMenuItem(this._status);
         this._modes = [];
         for (const [name, value] of [['Off', 0], ['Noise cancellation', 1], ['Transparency', 2]]) {
             const item = new PopupMenu.PopupMenuItem(name);
             item.connect('activate', () => this._action('mode', new GLib.Variant('i', value)));
-            this._toggle.menu.addMenuItem(item);
+            this.menu.addMenuItem(item);
             this._modes.push(item);
         }
         this._adaptive = new PopupMenu.PopupSwitchMenuItem('Adaptive ANC', false);
         this._adaptive.connect('toggled', (_item, enabled) =>
             this._action('adaptive', new GLib.Variant('b', enabled)));
-        this._toggle.menu.addMenuItem(this._adaptive);
+        this.menu.addMenuItem(this._adaptive);
         this._levels = [];
         for (const [name, value] of [['Light', 0], ['Balanced', 1], ['Deep', 2]]) {
             const item = new PopupMenu.PopupMenuItem(name);
             item.connect('activate', () => this._action('level', new GLib.Variant('i', value)));
-            this._toggle.menu.addMenuItem(item);
+            this.menu.addMenuItem(item);
             this._levels.push(item);
         }
-        this._toggle.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this._settings = new PopupMenu.PopupMenuItem('Open settings');
         this._settings.connect('activate', () => this._action('settings'));
-        this._toggle.menu.addMenuItem(this._settings);
+        this.menu.addMenuItem(this._settings);
         this._disconnect = new PopupMenu.PopupMenuItem('Disconnect');
         this._disconnect.connect('activate', () => this._action('disconnect'));
-        this._toggle.menu.addMenuItem(this._disconnect);
-        this._toggle.menu.connect('open-state-changed', (_menu, open) => {
+        this.menu.addMenuItem(this._disconnect);
+        this.menu.connect('open-state-changed', (_menu, open) => {
             if (open) {
                 this._action('refresh');
                 this._refresh();
             }
         });
-        this._toggle.connect('clicked', () => this._action('settings'));
-        this.quickSettingsItems.push(this._toggle);
-        Main.panel.statusArea.quickSettings.addExternalIndicator(this);
         this._render();
         Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.DO_NOT_AUTO_START,
             null, BUS, PATH, IFACE, null, (_source, result) => {
@@ -133,10 +126,9 @@ const NeoIndicator = GObject.registerClass(class NeoIndicator extends SystemIndi
         const s = this._state;
         const connected = s.connected;
         const enabled = connected && s.available && !s.busy;
-        this._indicator.visible = connected;
-        this._toggle.subtitle = !this._proxy?.g_name_owner ? 'App unavailable' : !connected ? 'Disconnected' :
+        const status = !this._proxy?.g_name_owner ? 'App unavailable' : !connected ? 'Disconnected' :
             s.battery >= 0 ? `${s.battery}%` : 'Connected';
-        this._status.label.text = s.error || (s.busy ? 'Working…' : this._toggle.subtitle);
+        this._status.label.text = s.error || (s.busy ? 'Working…' : status);
         this._modes.forEach((item, value) => {
             item.visible = connected;
             item.setSensitive(enabled);
@@ -161,7 +153,6 @@ const NeoIndicator = GObject.registerClass(class NeoIndicator extends SystemIndi
             if (this._signalId) this._proxy.disconnect(this._signalId);
             if (this._ownerId) this._proxy.disconnect(this._ownerId);
         }
-        this._toggle.destroy();
         super.destroy();
     }
 });
@@ -169,6 +160,7 @@ const NeoIndicator = GObject.registerClass(class NeoIndicator extends SystemIndi
 export default class NeoControlsExtension extends Extension {
     enable() {
         this._indicator = new NeoIndicator();
+        Main.panel.addToStatusArea('neo-headphones', this._indicator);
     }
 
     disable() {

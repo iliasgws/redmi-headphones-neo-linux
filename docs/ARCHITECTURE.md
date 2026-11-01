@@ -25,7 +25,7 @@ local changes, pulls fast-forward only, and reinstalls if the installed revision
 differs. A helper restarts the installed app after the old process exits. Update
 status is returned to the GTK thread; Bluetooth controls have their own worker.
 
-The optional GNOME Shell extension in `gnome-extension/` uses the session D-Bus
+The optional GNOME top-bar extension in `gnome-extension/` uses the session D-Bus
 interface `dev.earbuds.NeoControls` at `/dev/earbuds/NeoControls`. `GetState`
 and `StateChanged` report BlueZ connection/battery and the most recent control
 snapshot; `Action` dispatches to the same serialized control worker as GTK.
