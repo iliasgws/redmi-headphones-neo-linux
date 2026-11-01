@@ -117,6 +117,18 @@ public partial class MainWindow : Window
             paired = devices.FirstOrDefault(d => d.Connected) ?? devices.FirstOrDefault();
             if (paired == null) { Status.Text = "Pair the Neo in Windows Bluetooth settings first."; BluetoothButton.Visibility = Visibility.Visible; return; }
             bool wasConnected = paired.Connected;
+            NeoAudioRequest? audioRequest = null;
+            if (userRequested && !wasConnected) {
+                Status.Text = "Connecting headphone audio…";
+                audioRequest = await NeoAudioConnect.RequestReconnectAsync(paired.Address);
+                if (audioRequest.Accepted) {
+                    for (int i = 0; i < 5; i++) {
+                        await Task.Delay(1000);
+                        var refreshed = await NeoDiscovery.FindPairedAsync();
+                        if (refreshed.Any(d => d.Address == paired.Address && d.Connected)) break;
+                    }
+                }
+            }
             session = await NeoProtocol.ConnectAsync(paired.Address);
             var settings = await session.ReadSettingsAsync();
             ShowSettings(settings);
@@ -126,9 +138,9 @@ public partial class MainWindow : Window
             ConnectButton.Content = "Settings"; SettingsButton.Visibility = Visibility.Collapsed;
             PlayAnimation(2000, 2149);
             if (!wasConnected) {
-                Status.Text = "Controls connected. Check the audio connection in Windows Bluetooth settings.";
+                Status.Text = audioRequest?.Accepted == true ? "Controls connected. Audio connection requested; check your Windows audio output." : "Controls connected. Connect audio in Windows Bluetooth settings.";
                 BluetoothButton.Visibility = Visibility.Visible;
-                if (userRequested) BluetoothSettings_Click(this, new RoutedEventArgs());
+                if (userRequested && audioRequest?.Accepted != true) BluetoothSettings_Click(this, new RoutedEventArgs());
             } else BluetoothButton.Visibility = Visibility.Collapsed;
         }
         catch (Exception ex) {

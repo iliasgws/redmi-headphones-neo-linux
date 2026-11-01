@@ -7,9 +7,10 @@ settings. A fresh, named Neo advertisement can show the popup automatically;
 Bluetooth discovery depends on the headphone's advertisements and Windows
 adapter, and may not work with hidden or changing Bluetooth addresses.
 
-**Connect** opens the Neo's authenticated control channel. If Windows did not
-already report the device as connected, the app opens Bluetooth settings so you
-can connect its audio there. Windows' Bluetooth connection status does not prove
+**Connect** requests a Windows audio reconnect and opens the Neo's authenticated
+control channel. If the driver does not accept the reconnect request, the app
+opens Windows Bluetooth settings as a fallback. Driver acceptance does not prove
+that audio connected. Windows' Bluetooth connection status does not prove
 that the audio profile is connected. The app displays battery only if the Neo
 returns a valid value. Controls and battery reporting require verification on a
 real Windows PC with the Neo.
