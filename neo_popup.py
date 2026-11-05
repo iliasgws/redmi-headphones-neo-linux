@@ -249,6 +249,13 @@ class NeoPopup(Gtk.Application):
         if not discovered or not self.is_neo(path): return
         props = self.objects[path][DEVICE]
         if props.get('Connected') or self.window.get_visible(): return
+        # BlueZ may report several same-name devices at once, including stale
+        # paired entries and nearby unpaired headsets. If a Neo is already
+        # connected, discovery of another candidate must not steal the popup.
+        if any(candidate != path and self.is_neo(candidate) and
+               self.objects.get(candidate, {}).get(DEVICE, {}).get('Connected')
+               for candidate in self.objects):
+            return
         now = time.monotonic()
         if now - self.last_shown.get(path, 0) < 15 or now - self.closed_at.get(path, 0) < 15: return
         self.show_device(path, 'find')
